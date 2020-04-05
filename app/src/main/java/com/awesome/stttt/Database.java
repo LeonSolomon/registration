@@ -14,36 +14,44 @@ import org.json.JSONObject;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Always use camel case when naming your functions and methods
+ * i.e senddata -> sendData. check_credentials->checkCredentials
+ *
+ */
 public class Database {
-  private static final String TAG = "Database";
-   //
+    RequestQueue requestQueue;
+    private static final String TAG = "Database";
+    //
     Context ctx;
+
     public Database(Context context) {
         ctx = context;
         requestQueue = Volley.newRequestQueue(ctx);
     }
-    Boolean check_credentials(JSONObject object){
-        senddata("user","check_client",object);
+
+    Boolean check_credentials(JSONObject object) {
+        senddata("user", "check_client", object);
         return true;
     }
-    RequestQueue requestQueue;
-    public void senddata(final String classname, final String method, final JSONObject obj){
+
+    public void senddata(final String classname, final String method, final JSONObject obj) {
         //
         String url = "https://mutall.co.ke/volley/alter.php";
         StringRequest request = new StringRequest(Request.Method.POST, url, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
-                Log.d(TAG, "onResponse: Response " +response.toString());
+                Log.d(TAG, "onResponse: Response " + response.toString());
 
             }
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
                 //
-                Log.d(TAG, "onErrorResponse: Error"+error.toString());
+                Log.d(TAG, "onErrorResponse: Error" + error.toString());
             }
 
-        }){
+        }) {
             @Override
             protected Map<String, String> getParams() throws AuthFailureError {
                 Map<String, String> params = new HashMap<>();

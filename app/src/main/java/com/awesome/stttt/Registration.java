@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -11,8 +12,14 @@ import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
+import com.android.volley.*;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class Registration extends AppCompatActivity implements View.OnClickListener {
     EditText username, mail, phone, password, passwd;
@@ -22,7 +29,9 @@ public class Registration extends AppCompatActivity implements View.OnClickListe
     private static final String TAG = "MainActivity";
     //
     Database db;
+    //dont understand what this user class is about
     User users = new User();
+    RequestQueue requestQueue;
 
     //
     @Override
@@ -37,6 +46,7 @@ public class Registration extends AppCompatActivity implements View.OnClickListe
         send = findViewById(R.id.btn);
         send.setOnClickListener(this);
 
+        requestQueue = Volley.newRequestQueue(this);
         //
         //Use TextWatcher for validating input data.
         TextWatcher nameWatcher = new TextWatcher() {
@@ -96,9 +106,44 @@ public class Registration extends AppCompatActivity implements View.OnClickListe
             }
             //
             users.signup(form);
-            db.senddata("user", "addclient", form);
-            Intent intent = new Intent(Registration.this, Login.class);
-            startActivity(intent);
+
+            /**
+             * The db.senddata is asyncronous and we dont know when it will complete.
+             * SO you dont want to call a new intent just after.
+             * How to solve this is as follows
+             */
+
+            String url = "https://mutall.co.ke/volley/alter.php";
+            StringRequest request = new StringRequest(Request.Method.POST, url, new Response.Listener<String>() {
+                @Override
+                public void onResponse(String response) {
+                    Log.d(TAG, "onResponse: Response " + response.toString());
+                    //only create an intent after successful registration
+                    Intent intent = new Intent(Registration.this, Login.class);
+                    startActivity(intent);
+
+
+                }
+            }, new Response.ErrorListener() {
+                @Override
+                public void onErrorResponse(VolleyError error) {
+                    //
+                    Log.d(TAG, "onErrorResponse: Error" + error.toString());
+                    //alert the user that a problem has occured
+                }
+
+            }) {
+                @Override
+                protected Map<String, String> getParams() throws AuthFailureError {
+                    Map<String, String> params = new HashMap<>();
+                    params.put("class", "user");
+                    params.put("method", "addclient");
+                    params.put("data", String.valueOf(form));
+                    return params;
+                }
+            };
+            requestQueue.add(request);
+
         }
     }
 }
